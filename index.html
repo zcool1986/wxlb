@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html data-dpr="1" style="font-size: 55.4px;">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>手机号码预测</title>
+    <script src="./js/vue.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="./css/index.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+</head>
+
+<body >
+<div id="app">
+  <div class="login_box" v-show="loading"></div>
+  <div class="shade" v-show="shade"></div>
+  <img src="img/top.jpg" width="100%" v-show="!state"/>
+  <img src="img/ds.jpg" width="100%"/>
+  <div id="search"  v-show="!state">
+  <ul class="user_form">
+  <li>手机号码<input class="user_form_input" type="text" ref="word" value="" placeholder="请输入手机号码"></li>
+  <li>您的姓名<input class="user_form_input" type="text" ref="name" value="" placeholder="请输入姓名（汉字）"></li>
+  <li class="radio">您的性别
+      <label class="i-checks"  ref="sex" id="sex">&nbsp;
+          <input type="radio" name="sex" value="1" checked>
+          男&nbsp;
+          <input type="radio" name="sex" value="0">
+          女
+        </label>
+  </li>
+  <li class="last_li">您的生日
+    <select class="form-control" style="width:70px;" ref="years">
+        <option v-for="y in years" :value="y">{{y}}</option>
+    </select>
+    <select class="form-control" style="width:50px;" ref="months">
+        <option v-for="m in months" :value=m>{{m}}</option> 
+    </select>
+    <select class="form-control" style="width:50px;" ref="dates">
+        <option v-for="d in dates" :value=d>{{d}}</option> 
+    </select><br/><div class="mg"></div>
+    <span class="mgl"></span>
+    <select class="form-control" style="width:60px;" ref="hours">
+        <option v-for="h in hours" :value=h>{{h}}</option> 
+    </select>
+    时
+    <select class="form-control" style="width:70px;" ref="minutes">
+        <option v-for="mi in minutes" :value=mi>{{mi}}</option> 
+    </select>
+    分
+  </li>
+  </ul>
+  <div style="text-align:center">
+  <button class="btn  btn-info" v-on:click="getdata1">我要测算</button>
+  </div>
+ </div>
+ <!--结果-->
+ <div id="result" v-show="state">
+  <div style="text-align:center">
+    <div class="btn2   btn-info2">号码吉凶</div>
+  </div>
+  <h2>您测试的号码吉凶如下</h2>
+  <h3>当前号码：
+    <spna class="text_red">{{sites1.dhhm}}</spna>，数理评分：
+    <span class="text_green">{{sites1.lxpf}}</span>
+  </h3>
+  <p>
+    <br/> 号码分析：{{sites1.hmfx}}
+    <br/> 吉凶：
+    <span class="text_green">{{sites1.jx}}</span>
+    <br/> 详解：{{sites1.xj}}
+  </p>
+
+  <div style="text-align:center">
+    <div class="btn2   btn-info2" v-on:click="getdata2">号码运势</div>
+  </div>
+  <div v-show="sites2" id="sites2">
+    <h3>短期运势影响：<span class="text_red">{{sites2.dqys}}</span></h3>
+    <p v-html="sites2.dqysxq">
+        {{sites2.dqysxq}}
+    </p>
+    <h3>长期运势影响：<span class="text_red">{{sites2.cqys}}</span></h3>
+    <p v-html="sites2.cqysxq">
+        {{sites2.cqysxq}}
+    </p>
+  </div>
+</div>
+
+</div>
+</body>
+<script>
+function jsonp(setting){
+    setting.data = setting.data || {}
+    setting.key = setting.key || 'callback'
+    setting.callback = setting.callback || function () { }
+    setting.data[setting.key] = 'successCallback'
+    window.successCallback = function (data) {
+      setting.callback(data);
+    }
+    var script = document.createElement('script')
+    var query = []
+    for (var key in setting.data) {
+      query.push(key + '=' + encodeURIComponent(setting.data[key]))
+    }
+    if(setting.parms){
+      script.src = setting.url + '?' + query.join('&')+'&'+setting.parms
+    }else{
+      script.src = setting.url + '?' + query.join('&')
+    }
+    document.head.appendChild(script)
+    document.head.removeChild(script)
+}
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    state:0,
+    years:[],
+    months:[],
+    dates:[],
+    hours:[],
+    minutes:[],
+    shade:false,
+    loading:false,
+    userid:0,
+    sites1:{},
+    sites2:0,
+    sites3:0,
+    sites4:0
+  },
+  created: function(){
+    var me=this;
+    var ys=1930;
+    for(var i=0;i<90;i++){
+      this.years.push(ys);
+      ys++;
+    }
+    
+    for(var i=1;i<13;i++){
+      this.months.push(i);
+    }
+
+    for(var i=1;i<32;i++){
+      this.dates.push(i);
+    }
+
+    for(var i=0;i<24;i++){
+      this.hours.push(i);
+    }
+
+    this.minutes.push("未知");
+    for(var i=0;i<60;i++){
+      this.minutes.push(i);
+    }
+  },
+  methods: {
+    loadinged:function(bo){
+      var me=this;
+      if(bo){
+        me.shade=true;
+        me.loading=true;
+      }else{
+        setTimeout(function(){
+            me.shade=false;
+            me.loading=false;
+        },1000);
+      }
+    },
+    getdata1:function(event){
+      var me=this;
+      me.shade=true;
+      me.loadinged(true);
+      var word=me.$refs.word.value;
+      var name=me.$refs.name.value;
+      var sex=document.getElementsByName("sex")[0].checked?1:0;
+      var year=me.$refs.years.value;
+      var month=me.$refs.months.value;
+      var day=me.$refs.dates.value;
+      var hour=me.$refs.hours.value;
+      var minute=me.$refs.minutes.value;
+      var pm='word='+word+'&name='+name+'&sex='+sex+'&year='+year+'&month='+month+'&day='+day+'&hour='+hour+'&minute='+minute;
+      jsonp({
+       url: 'data/0.php',
+        //url: 'http://127.0.0.1:5000/test_post/aa',
+        key: 'callback',
+        parms:pm,
+        callback: function(re,success) {
+          me.sites1=re.result;
+          me.userid=re.userid;
+          me.state=1;
+          me.loadinged(false);
+        }
+      });
+    },
+    /*****/
+    getdata2:function(event){
+      var me=this;
+      me.loadinged(true);
+      jsonp({
+        url: 'data/1.php',
+        key: 'callback',
+        parms:'req=2&userid='+me.userid,
+        callback: function(re,success) {
+          me.sites2=re.result;
+          setTimeout(function(){
+            var container = me.$el;
+            window.scrollTo(0,document.body.scrollHeight-120);
+          },1000)
+          me.loadinged(false);
+        }
+      });
+    },
+    /*****/
+    getdata3:function(event){
+    },
+    /*****/
+    getdata4:function(event){
+    }
+  }
+});
+</script>
+</html>
